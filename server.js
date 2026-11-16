@@ -18,6 +18,22 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 
 async function init() {
   // PostgreSQL is intentionally limited to user accounts and authentication data.
   await pool.query(`CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'editor', created_at TIMESTAMPTZ DEFAULT NOW())`);
+  // Move legacy article rows to Drive before removing the old PostgreSQL content table.
+  const legacy = await pool.query("SELECT to_regclass('public.articles') AS table_name");
+  if (legacy.rows[0].table_name) {
+    const oldRows = await pool.query("SELECT * FROM articles ORDER BY id");
+    for (const row of oldRows.rows) {
+      await drive.createJson("article", {
+        title: row.title, slug: (row.slug || slugify(row.title)) + "-migrated-" + row.id,
+        excerpt: row.excerpt || "", content: row.content || "",
+        category: row.category || "World", image_url: row.image_url || "",
+        status: row.status || "draft", author: row.author || "ZEDEX NEXUS",
+        source_url: row.source_url || "", published_at: row.published_at || null
+      });
+    }
+    await pool.query("DROP TABLE articles");
+    console.log("Legacy articles migrated to Google Drive; PostgreSQL article table removed.");
+  }
   if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
     const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
     await pool.query("INSERT INTO users(email,password_hash,role) VALUES($1,$2,'admin') ON CONFLICT(email) DO NOTHING", [process.env.ADMIN_EMAIL.toLowerCase(), hash]);
