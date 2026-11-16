@@ -15,6 +15,17 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process
 const secret = process.env.JWT_SECRET || "development-only-change-me";
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 }, fileFilter: (_req,file,cb) => cb(null, /^image\/(jpeg|png|webp|gif)$/.test(file.mimetype)) });
 
+function logDriveError(operation, err) {
+  const safeMessage = String(err?.message || err || "Unknown error")
+    .replace(/(access_token|refresh_token|client_secret|authorization)\s*[:=]\s*[^\s,]+/gi, "$1=[REDACTED]")
+    .slice(0, 500);
+  console.error(`[Google Drive] ${operation} failed`, {
+    name: err?.name || "Error",
+    code: err?.code || err?.response?.status || null,
+    message: safeMessage
+  });
+}
+
 async function init() {
   // PostgreSQL is intentionally limited to user accounts and authentication data.
   await pool.query(`CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, email TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'editor', created_at TIMESTAMPTZ DEFAULT NOW())`);
@@ -50,11 +61,11 @@ const publicArticle = a => ({ id:a.id, title:a.title, slug:a.slug, excerpt:a.exc
 app.get("/api/health", (_req,res)=>res.json({ok:true,site:"ZEDEX NEXUS",contentStorage:"Google Drive",userStorage:"Render PostgreSQL"}));
 app.get("/api/articles", async (_req,res)=>{
   try { const files=await drive.listContent("article"); const items=(await Promise.all(files.map(f=>drive.readJson(f.id)))).filter(a=>a.status==="published").sort((a,b)=>String(b.published_at||b.created_at).localeCompare(String(a.published_at||a.created_at))).slice(0,50); res.json(items.map(publicArticle)); }
-  catch(e){res.status(503).json({error:"Could not load articles from Google Drive. Check Drive configuration."});}
+  catch(e){logDriveError("public article list",e);res.status(503).json({error:"Could not load articles from Google Drive. Check Drive configuration."});}
 });
 app.get("/api/articles/:slug", async(req,res)=>{
   try { const files=await drive.listContent("article"); for(const f of files){const a=await drive.readJson(f.id);if(a.slug===req.params.slug&&a.status==="published")return res.json(publicArticle(a));} res.status(404).json({error:"Not found"}); }
-  catch(e){res.status(503).json({error:"Could not load article from Google Drive"});}
+  catch(e){logDriveError("public article detail",e);res.status(503).json({error:"Could not load article from Google Drive"});}
 });
 app.get("/api/media/:id", async(req,res)=>{
   try { const m=await drive.getMedia(req.params.id);res.setHeader("Content-Type",m.mimeType);res.setHeader("Cache-Control","public, max-age=3600");m.stream.pipe(res); }
@@ -65,20 +76,20 @@ app.post("/api/login", async(req,res)=>{
 });
 app.get("/api/admin/articles",auth,async(req,res)=>{
   try {const files=await drive.listContent("article");const items=await Promise.all(files.map(f=>drive.readJson(f.id)));res.json(items.sort((a,b)=>String(b.updated_at||b.created_at).localeCompare(String(a.updated_at||a.created_at))));}
-  catch(e){res.status(503).json({error:"Could not load articles from Google Drive"});}
+  catch(e){logDriveError("admin article list",e);res.status(503).json({error:"Could not load articles from Google Drive"});}
 });
 app.post("/api/admin/articles",auth,async(req,res)=>{
   try {const b=req.body;if(!b.title||!b.content)return res.status(400).json({error:"Title and content required"});const status=b.status==="published"?"published":"draft";const slug=slugify(b.title)+"-"+Date.now().toString(36);const a=await drive.createJson("article",{title:b.title,slug,excerpt:b.excerpt||"",content:b.content,category:b.category||"World",image_url:b.image_url||"",status,author:req.user.email,source_url:b.source_url||"",published_at:status==="published"?new Date().toISOString():null});res.status(201).json(a);}
-  catch(e){res.status(503).json({error:"Could not save article to Google Drive. Check Drive configuration."});}
+  catch(e){logDriveError("article create",e);res.status(503).json({error:"Could not save article to Google Drive. Check Drive configuration."});}
 });
 app.put("/api/admin/articles/:id",auth,async(req,res)=>{
   try {const b=req.body;const status=b.status==="published"?"published":"draft";const a=await drive.updateJson("article",req.params.id,{title:b.title,excerpt:b.excerpt||"",content:b.content,category:b.category||"World",image_url:b.image_url||"",status,source_url:b.source_url||"",published_at:status==="published"?new Date().toISOString():null});res.json(a);}
-  catch(e){res.status(503).json({error:"Could not update article in Google Drive"});}
+  catch(e){logDriveError("article update",e);res.status(503).json({error:"Could not update article in Google Drive"});}
 });
 app.post("/api/admin/media",auth,upload.single("file"),async(req,res)=>{
   if(!req.file)return res.status(400).json({error:"Choose a JPG, PNG, WEBP or GIF image (max 15 MB)."});
   try {res.status(201).json(await drive.uploadMedia(req.file));}
-  catch(e){res.status(503).json({error:"Could not upload image to Google Drive"});}
+  catch(e){logDriveError("media upload",e);res.status(503).json({error:"Could not upload image to Google Drive"});}
 });
 app.post("/api/admin/users",auth,admin,async(req,res)=>{
   try{const email=String(req.body.email||"").toLowerCase(),password=String(req.body.password||""),role=req.body.role==="publisher"?"publisher":"editor";if(!email||password.length<10)return res.status(400).json({error:"Email and password (10+ characters) required"});const hash=await bcrypt.hash(password,12);await pool.query("INSERT INTO users(email,password_hash,role) VALUES($1,$2,$3)",[email,hash,role]);res.status(201).json({ok:true});}catch(e){res.status(400).json({error:"Could not create user; email may already exist"});}
