@@ -47,6 +47,8 @@ async function createJson(type, data) {
 async function updateJson(type, id, data) {
   const drive = driveClient();
   const old = await readJson(id);
+  // Preserve the previous complete version as a separate Drive JSON file before overwriting.
+  await createJson("revision", { articleId: id, snapshot: old });
   const body = { ...old, ...data, id, updated_at: new Date().toISOString() };
   await drive.files.update({ fileId: id, media: { mimeType: "application/json", body: Readable.from([JSON.stringify(body)]) } });
   return body;
@@ -63,7 +65,8 @@ async function uploadMedia(file) {
 }
 async function getMedia(id) {
   const drive = driveClient();
-  const meta = await drive.files.get({ fileId: id, fields: "id,name,mimeType" });
+  const meta = await drive.files.get({ fileId: id, fields: "id,name,mimeType,parents" });
+  if (!(meta.data.parents || []).includes(folderId())) throw new Error("Media is outside the ZEDEX NEXUS Drive folder");
   const file = await drive.files.get({ fileId: id, alt: "media" }, { responseType: "stream" });
   return { mimeType: meta.data.mimeType, stream: file.data };
 }
