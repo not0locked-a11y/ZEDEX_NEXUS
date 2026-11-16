@@ -36,5 +36,5 @@ services:
 databases:
   - name: zedex-nexus-db
     plan: free
-    databaseName: zedexnexus_users
+    databaseName: zedexnexus
     user: zedexnexus
