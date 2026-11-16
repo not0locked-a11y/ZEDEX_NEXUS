@@ -70,4 +70,12 @@ async function getMedia(id) {
   const file = await drive.files.get({ fileId: id, alt: "media" }, { responseType: "stream" });
   return { mimeType: meta.data.mimeType, stream: file.data };
 }
-module.exports = { listContent, readJson, createJson, updateJson, uploadMedia, getMedia };
+async function deleteArticle(id) {
+  const drive = driveClient();
+  const meta = await drive.files.get({ fileId: id, fields: "id,parents,appProperties" });
+  if (!(meta.data.parents || []).includes(folderId()) || meta.data.appProperties?.zedexType !== "article") {
+    throw new Error("Article not found in the ZEDEX NEXUS Drive folder");
+  }
+  await drive.files.delete({ fileId: id });
+}
+module.exports = { listContent, readJson, createJson, updateJson, uploadMedia, getMedia, deleteArticle };
