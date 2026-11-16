@@ -82,6 +82,15 @@ app.post("/api/admin/articles",auth,async(req,res)=>{
   try {const b=req.body;if(!b.title||!b.content)return res.status(400).json({error:"Title and content required"});const status=b.status==="published"?"published":"draft";const slug=slugify(b.title)+"-"+Date.now().toString(36);const a=await drive.createJson("article",{title:b.title,slug,excerpt:b.excerpt||"",content:b.content,category:b.category||"World",image_url:b.image_url||"",status,author:req.user.email,source_url:b.source_url||"",published_at:status==="published"?new Date().toISOString():null});res.status(201).json(a);}
   catch(e){logDriveError("article create",e);res.status(503).json({error:"Could not save article to Google Drive. Check Drive configuration."});}
 });
+app.delete("/api/admin/articles/:id",auth,admin,async(req,res)=>{
+  try {
+    await drive.deleteArticle(req.params.id);
+    res.json({ok:true,message:"Article deleted from Google Drive."});
+  } catch(e) {
+    logDriveError("article delete",e);
+    res.status(503).json({error:"Could not delete article from Google Drive"});
+  }
+});
 app.put("/api/admin/articles/:id",auth,async(req,res)=>{
   try {const b=req.body;const status=b.status==="published"?"published":"draft";const a=await drive.updateJson("article",req.params.id,{title:b.title,excerpt:b.excerpt||"",content:b.content,category:b.category||"World",image_url:b.image_url||"",status,source_url:b.source_url||"",published_at:status==="published"?new Date().toISOString():null});res.json(a);}
   catch(e){logDriveError("article update",e);res.status(503).json({error:"Could not update article in Google Drive"});}
