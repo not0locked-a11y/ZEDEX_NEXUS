@@ -185,3 +185,35 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .top .brand-image { min-width: 300px; min-height: 58px; }
   .top .brand-logo { width: clamp(280px, 19vw, 480px); max-height: 76px; }
 }
+
+
+/* Remove oversized left/right gutters on television and smaller browser viewports */
+.top {
+  padding-left: clamp(20px, 4vw, 72px);
+  padding-right: clamp(20px, 4vw, 72px);
+}
+.hero {
+  padding-left: clamp(24px, 4vw, 80px);
+  padding-right: clamp(24px, 4vw, 80px);
+}
+.section {
+  padding-left: clamp(24px, 4vw, 80px);
+  padding-right: clamp(24px, 4vw, 80px);
+}
+#latest.section {
+  padding-left: clamp(24px, 3vw, 60px);
+  padding-right: clamp(24px, 3vw, 60px);
+}
+.about {
+  padding-left: clamp(24px, 4vw, 80px);
+  padding-right: clamp(24px, 4vw, 80px);
+}
+footer {
+  padding-left: clamp(24px, 4vw, 80px);
+  padding-right: clamp(24px, 4vw, 80px);
+}
+@media screen and (min-width: 1800px) and (min-height: 700px) {
+  .top { padding-left: clamp(32px, 3vw, 80px); padding-right: clamp(32px, 3vw, 80px); }
+  .hero { padding-left: clamp(40px, 4vw, 90px); padding-right: clamp(40px, 4vw, 90px); }
+  .section,.about,footer { padding-left: clamp(40px, 4vw, 90px); padding-right: clamp(40px, 4vw, 90px); }
+}
