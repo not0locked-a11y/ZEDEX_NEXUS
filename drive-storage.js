@@ -31,7 +31,9 @@ async function listContent(type) {
 async function readJson(id) {
   const drive = driveClient();
   const r = await drive.files.get({ fileId: id, alt: "media" }, { responseType: "text" });
-  return typeof r.data === "string" ? JSON.parse(r.data) : JSON.parse(String(r.data));
+  const article = typeof r.data === "string" ? JSON.parse(r.data) : JSON.parse(String(r.data));
+  // The Drive file ID is authoritative; older JSON payloads may contain a separate UUID.
+  return { ...article, id };
 }
 async function createJson(type, data) {
   const drive = driveClient();
