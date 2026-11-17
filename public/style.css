@@ -109,3 +109,43 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .staff-wrap>.eyebrow{display:block;margin-bottom:10px;line-height:1.6}
 .staff-wrap>h1{margin:0 0 22px;line-height:1.25}
 .staff-nav.dashboard-tabs{margin-top:18px;margin-bottom:26px}
+
+/* Zoom-resilient staff newsroom layout */
+.staff-page{font-size:1vw;padding:2.2vw 4vw 5vw}
+.staff-header,.staff-wrap{width:92vw;max-width:none}
+.staff-header{margin:0 auto 2vw;padding-bottom:1.2vw;gap:2vw}
+.staff-header .brand-logo{width:14vw;max-width:none}
+.staff-header .outline{font-size:1em;padding:.55em .9em}
+.staff-wrap>.eyebrow{font-size:.72em;letter-spacing:.2em}
+.staff-wrap>h1{font-size:2.2em;margin:.25em 0 .65em}
+.staff-nav.dashboard-tabs{gap:.65em;margin:1.1em 0 1.35em;padding-bottom:.8em}
+.staff-nav .dashboard-tab{font-size:.82em;padding:.7em 1.05em}
+.staff-section{padding:1.5em;margin-bottom:1.2em;border-radius:.4em}
+.staff-section>.eyebrow{font-size:.72em;margin-bottom:.6em}
+.staff-section>h2{font-size:1.5em;margin:0 0 1em}
+.staff-section input,.staff-section select,.staff-section textarea{font-size:.9em;padding:.75em .85em;margin:.4em 0;border-radius:.25em}
+.staff-section label{font-size:.9em}
+.staff-grid{gap:1em}
+.staff-section .toolbar{gap:.4em;margin:.7em 0}
+.staff-section .toolbar button,.staff-section .toolbar select{font-size:.82em;padding:.55em .75em}
+.staff-section .toolbar input{width:3em;padding:.25em}
+.staff-section .editor{font-size:1em;min-height:18em;padding:1em;line-height:1.5}
+.staff-section .actions{gap:.65em;margin-top:.8em}
+.staff-section .actions button{font-size:.85em;padding:.65em .9em}
+.staff-section .status{font-size:.85em}
+.staff-section .admin-item{font-size:.9em;padding:.75em}
+.staff-section .admin-item button{font-size:.8em;padding:.4em .65em}
+@media(max-width:760px){
+ .staff-page{font-size:16px;padding:18px 4vw 40px}
+ .staff-header,.staff-wrap{width:100%}
+ .staff-header{margin-bottom:22px;padding-bottom:14px}
+ .staff-header .brand-logo{width:160px;max-width:42vw}
+ .staff-wrap>h1{font-size:clamp(26px,6vw,36px)}
+ .staff-section{padding:16px;margin-bottom:16px}
+ .staff-section>h2{font-size:21px}
+ .staff-grid{grid-template-columns:1fr;gap:0}
+ .staff-section .editor{min-height:240px}
+ .staff-nav.dashboard-tabs{display:flex;gap:6px;flex-wrap:wrap}
+ .staff-nav .dashboard-tab{font-size:12px;padding:10px 9px}
+ .staff-section .toolbar button,.staff-section .toolbar select{font-size:12px}
+}
