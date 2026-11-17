@@ -103,9 +103,26 @@ app.post("/api/admin/media",auth,upload.single("file"),async(req,res)=>{
 app.post("/api/admin/users",auth,admin,async(req,res)=>{
   try{const email=String(req.body.email||"").toLowerCase(),password=String(req.body.password||""),role=req.body.role==="publisher"?"publisher":"editor";if(!email||password.length<10)return res.status(400).json({error:"Email and password (10+ characters) required"});const hash=await bcrypt.hash(password,12);await pool.query("INSERT INTO users(email,password_hash,role) VALUES($1,$2,$3)",[email,hash,role]);res.status(201).json({ok:true});}catch(e){res.status(400).json({error:"Could not create user; email may already exist"});}
 });
-async function generateWithAI() {
+const AI_CATEGORIES=["World","Business","Science","Technology","Health","Education","Environment","Sports","Culture","Politics"];
+async function chooseAICategory() {
+  try {
+    const files=await drive.listContent("article");
+    const articles=(await Promise.all(files.map(f=>drive.readJson(f.id)))).filter(a=>a.status==="published").sort((a,b)=>String(b.published_at||b.created_at).localeCompare(String(a.published_at||a.created_at)));
+    const recent=articles.slice(0,40);
+    const counts=Object.fromEntries(AI_CATEGORIES.map(c=>[c,0]));
+    for(const a of recent)if(counts[a.category]!==undefined)counts[a.category]++;
+    const min=Math.min(...Object.values(counts));
+    const choices=AI_CATEGORIES.filter(c=>counts[c]===min);
+    const category=choices[Math.floor(Math.random()*choices.length)];
+    return {category,recentTitles:recent.slice(0,18).map(a=>a.title).filter(Boolean)};
+  } catch(e) {
+    console.error("[AI] Could not inspect recent article categories; using balanced category rotation fallback:",e.message);
+    return {category:AI_CATEGORIES[Math.floor(Math.random()*AI_CATEGORIES.length)],recentTitles:[]};
+  }
+}
+async function generateWithAI(category, recentTitles=[]) {
   const provider=(process.env.AI_PROVIDER||"groq").toLowerCase();
-  const prompt='Create one concise, factual news article idea for a general audience. Return ONLY JSON with keys title,excerpt,content,category,source_url. Do not invent facts or citations. If you cannot verify a current event, create a clearly labelled evergreen explainer instead.';
+  const prompt='Create one concise, factual news article for a general audience. REQUIRED CATEGORY: '+category+'. This must be about '+category+' and must not be a technology article unless the required category is Technology. Avoid repeating these recently published headlines or subjects: '+recentTitles.join(" | ")+'. Choose a distinct subject. Return ONLY valid JSON with keys title,excerpt,content,category,source_url. Set category exactly to "'+category+'". Do not invent facts, events, statistics, quotes, sources or citations. If you cannot verify a current event, write a clearly labelled evergreen explainer in the required category instead. Keep the article useful, balanced and readable.';
   async function generateWithGemini() {
     if(!process.env.GEMINI_API_KEY)throw new Error("GEMINI_API_KEY is not configured");
     const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key="+process.env.GEMINI_API_KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
@@ -147,11 +164,12 @@ async function generateWithAI() {
   }
 }
 async function generateAndPublish() {
-  const a=await generateWithAI();
+  const selection=await chooseAICategory();
+  const a=await generateWithAI(selection.category,selection.recentTitles);
   if(!a.title||!a.content)throw new Error("AI returned incomplete article");
   const now=new Date().toISOString();
   const slug=slugify(a.title)+"-"+Date.now().toString(36);
-  const article=await drive.createJson("article",{title:a.title,slug,excerpt:a.excerpt||"",content:a.content,category:a.category||"World",image_url:"",status:"published",author:"ZEDEX AI",source_url:a.source_url||"",published_at:now});
+  const article=await drive.createJson("article",{title:a.title,slug,excerpt:a.excerpt||"",content:a.content,category:selection.category,image_url:"",status:"published",author:"ZEDEX AI",source_url:a.source_url||"",published_at:now});
   console.log("AI article generated and PUBLISHED to Google Drive:",article.title);
   return article;
 }
