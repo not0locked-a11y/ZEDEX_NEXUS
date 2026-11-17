@@ -54,3 +54,13 @@
 #dashboard .dashboard-panel .editor{line-height:1.5}
 #dashboard #lineSpacing{min-width:112px}
 @media(max-width:600px){.dashboard-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}.dashboard-tab{padding:9px 5px;font-size:11px}.dashboard-panel{padding:14px}}
+
+/* Actual newsroom tab navigation: show one section at a time */
+.staff-nav.dashboard-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 24px;border-bottom:1px solid #34425e;padding-bottom:14px}
+.staff-nav .dashboard-tab{padding:12px 18px;background:#090f1e;border:1px solid #34425e;border-radius:4px;color:#c8d5ed;font-weight:800;cursor:pointer}
+.staff-nav .dashboard-tab.active{background:var(--cyan);border-color:var(--cyan);color:#061019}
+.dashboard-panel.hidden{display:none!important}
+.dashboard-panel{animation:tabFade .18s ease-out}
+@keyframes tabFade{from{opacity:.55;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+#lineSpacing{width:auto;min-width:110px}
+@media(max-width:600px){.staff-nav.dashboard-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.staff-nav .dashboard-tab{padding:10px 5px;font-size:11px}}
