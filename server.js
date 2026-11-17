@@ -146,13 +146,25 @@ async function generateWithAI() {
     }
   }
 }
-async function scheduledDraft() {
-  const a=await generateWithAI();if(!a.title||!a.content)throw new Error("AI returned incomplete article");
+async function generateAndPublish() {
+  const a=await generateWithAI();
+  if(!a.title||!a.content)throw new Error("AI returned incomplete article");
+  const now=new Date().toISOString();
   const slug=slugify(a.title)+"-"+Date.now().toString(36);
-  await drive.createJson("article",{title:a.title,slug,excerpt:a.excerpt||"",content:a.content,category:a.category||"World",image_url:"",status:"draft",author:"ZEDEX AI",source_url:a.source_url||"",published_at:null});
-  console.log("AI article saved to Google Drive as draft:",a.title);
+  const article=await drive.createJson("article",{title:a.title,slug,excerpt:a.excerpt||"",content:a.content,category:a.category||"World",image_url:"",status:"published",author:"ZEDEX AI",source_url:a.source_url||"",published_at:now});
+  console.log("AI article generated and PUBLISHED to Google Drive:",article.title);
+  return article;
 }
-app.post("/api/admin/ai-generate",auth,async(_req,res)=>{try{await scheduledDraft();res.json({ok:true,message:"AI article generated and saved to Google Drive as a draft."});}catch(e){res.status(500).json({error:e.message||"AI generation failed"});}});
-cron.schedule("0 6,12,18,0 * * *",()=>scheduledDraft().catch(e=>console.error("Scheduled AI draft failed:",e.message)),{timezone:"Asia/Kolkata"});
+app.post("/api/admin/ai-generate",auth,admin,async(_req,res)=>{
+  try {
+    const article=await generateAndPublish();
+    res.json({ok:true,message:"AI article generated and published on ZEDEX NEXUS.",article:publicArticle(article)});
+  } catch(e) {
+    console.error("Manual AI publish failed:",e.message);
+    res.status(500).json({error:e.message||"AI generation failed"});
+  }
+});
+// Generate and publish at 6 AM, noon, 6 PM and midnight India time.
+cron.schedule("0 6,12,18,0 * * *",()=>generateAndPublish().catch(e=>console.error("Scheduled AI publishing failed:",e.message)),{timezone:"Asia/Kolkata"});
 const port=process.env.PORT||10000;
 init().then(()=>app.listen(port,()=>console.log("ZEDEX NEXUS listening on",port))).catch(e=>{console.error("Startup failed",e);process.exit(1);});
