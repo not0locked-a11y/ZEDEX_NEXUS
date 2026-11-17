@@ -177,3 +177,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @media(max-width:600px) {
   .hero { min-height: 0; height: auto; padding: 72px 7vw 60px; }
 }
+
+/* Keep the brand mark clearly visible in the site navigation */
+.top .brand-image { flex: 0 0 auto; min-width: 190px; min-height: 44px; }
+.top .brand-logo { width: 238px; height: auto; max-height: 58px; }
+@media screen and (min-width: 1800px) and (min-height: 700px) {
+  .top .brand-image { min-width: 300px; min-height: 58px; }
+  .top .brand-logo { width: clamp(280px, 19vw, 480px); max-height: 76px; }
+}
