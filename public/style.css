@@ -149,3 +149,31 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
  .staff-nav .dashboard-tab{font-size:12px;padding:10px 9px}
  .staff-section .toolbar button,.staff-section .toolbar select{font-size:12px}
 }
+
+
+/* Compact hero: remove excessive empty space, including on Android TV */
+.hero {
+  min-height: 0;
+  height: auto;
+  padding: clamp(54px, 7vh, 96px) 10vw clamp(48px, 6vh, 82px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+.hero h1 { margin: 18px 0; }
+.hero p { margin: 0 0 4px; }
+.hero .cta { margin-top: 18px; }
+.orb { top: 50%; transform: translateY(-50%); }
+@media screen and (min-width: 1800px) and (min-height: 700px) {
+  .hero {
+    min-height: 0;
+    height: 48vh;
+    max-height: 620px;
+    padding: 5vh 9vw;
+  }
+  .hero h1 { font-size: clamp(76px, 6.2vw, 190px); }
+}
+@media(max-width:600px) {
+  .hero { min-height: 0; height: auto; padding: 72px 7vw 60px; }
+}
