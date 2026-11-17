@@ -41,3 +41,16 @@
 
 /* ZEDEX NEXUS brand logo */
 .brand-image{display:inline-flex;align-items:center;text-decoration:none;line-height:0}.brand-logo{display:block;width:238px;max-width:48vw;height:auto;object-fit:contain}.staff-header .brand-logo{width:220px}@media(max-width:600px){.brand-logo{width:178px;max-width:48vw}.staff-header .brand-logo{width:170px}}
+
+/* Separate newsroom dashboard tabs */
+.dashboard-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 22px;padding-bottom:14px;border-bottom:1px solid #34425e}
+.dashboard-tab{padding:11px 16px;background:#090f1e;color:#c8d5ed;border:1px solid #34425e;border-radius:4px;cursor:pointer;font-weight:700}
+.dashboard-tab.active{background:var(--cyan);color:#061019;border-color:var(--cyan)}
+.dashboard-panel{background:#0d1425;border:1px solid #293753;border-radius:6px;padding:20px;margin:0 0 12px}
+.dashboard-panel h3{margin:0 0 16px;color:#eef4ff;font-size:19px}
+.dashboard-panel.hidden{display:none}
+#dashboard .panel.wide{max-height:90vh;overflow-y:auto}
+#dashboard .panel.wide>.close{position:sticky;float:right;top:0;z-index:2}
+#dashboard .dashboard-panel .editor{line-height:1.5}
+#dashboard #lineSpacing{min-width:112px}
+@media(max-width:600px){.dashboard-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}.dashboard-tab{padding:9px 5px;font-size:11px}.dashboard-panel{padding:14px}}
