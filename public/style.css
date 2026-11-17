@@ -64,3 +64,40 @@
 @keyframes tabFade{from{opacity:.55;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 #lineSpacing{width:auto;min-width:110px}
 @media(max-width:600px){.staff-nav.dashboard-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}.staff-nav .dashboard-tab{padding:10px 5px;font-size:11px}}
+
+
+/* Large-screen / Android TV presentation */
+@media screen and (min-width: 1800px) and (min-height: 700px) {
+  html { font-size: clamp(18px, 1.1vw, 32px); }
+  .top { height: clamp(82px, 6vw, 132px); padding-left: 6vw; padding-right: 6vw; }
+  .brand-logo { width: clamp(260px, 18vw, 520px); max-width: 38vw; }
+  .top nav { gap: clamp(24px, 2vw, 48px); font-size: clamp(17px, 1.25vw, 30px); }
+  .top nav .outline { padding: .7em 1.2em; font-size: inherit; }
+  .hero { min-height: 72vh; padding: clamp(110px, 10vh, 190px) 9vw 120px; }
+  .hero h1 { font-size: clamp(76px, 7vw, 260px); line-height: .98; letter-spacing: -.035em; }
+  .hero p { font-size: clamp(20px, 1.6vw, 42px); max-width: 60ch; }
+  .hero .cta { font-size: clamp(16px, 1.15vw, 28px); padding: .85em 1.2em; }
+  .orb { width: clamp(220px, 19vw, 620px); height: clamp(220px, 19vw, 620px); }
+  .section { padding: clamp(65px, 6vw, 150px) 6vw; }
+  .section h2, .about h2 { font-size: clamp(38px, 3.2vw, 100px); }
+  .section-head { margin-bottom: clamp(26px, 2.5vw, 64px); }
+  .live, .eyebrow { font-size: clamp(12px, .85vw, 22px); }
+  .articles { max-width: 100%; gap: clamp(18px, 1.5vw, 38px); }
+  .article { padding: clamp(24px, 2vw, 54px); min-height: 0; }
+  .article small { font-size: clamp(13px, .9vw, 23px); }
+  .article h3 { font-size: clamp(24px, 2vw, 56px); line-height: 1.25; }
+  .article p { font-size: clamp(18px, 1.35vw, 38px); line-height: 1.55; }
+  .article a { font-size: clamp(14px, 1vw, 26px); padding: .75em 1.15em; }
+  .about { padding: clamp(70px, 7vw, 170px) 9vw; }
+  .about p { max-width: 65ch; font-size: clamp(18px, 1.25vw, 34px); }
+  footer { font-size: clamp(12px, .8vw, 20px); padding: 32px 9vw; }
+}
+/* Android TV remote-control focus visibility */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 4px solid #50f4ef;
+  outline-offset: 5px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
