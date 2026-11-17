@@ -106,21 +106,45 @@ app.post("/api/admin/users",auth,admin,async(req,res)=>{
 async function generateWithAI() {
   const provider=(process.env.AI_PROVIDER||"groq").toLowerCase();
   const prompt='Create one concise, factual news article idea for a general audience. Return ONLY JSON with keys title,excerpt,content,category,source_url. Do not invent facts or citations. If you cannot verify a current event, create a clearly labelled evergreen explainer instead.';
-  if(provider==="gemini" && process.env.GEMINI_API_KEY){
+  async function generateWithGemini() {
+    if(!process.env.GEMINI_API_KEY)throw new Error("GEMINI_API_KEY is not configured");
     const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+process.env.GEMINI_API_KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
-    const j=await r.json();if(!r.ok)throw new Error("Gemini request failed");return JSON.parse(j.candidates[0].content.parts[0].text.replace(/```json|```/g,"").trim());
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok){
+      const detail=String(j?.error?.message||"No error details returned").slice(0,300);
+      console.error("[Gemini] request failed",{status:r.status,message:detail});
+      throw new Error("Gemini API error ("+r.status+"): "+detail);
+    }
+    const output=j?.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("")||"";
+    if(!output)throw new Error("Gemini returned an empty response");
+    return JSON.parse(output.replace(/```json|```/g,"").trim());
   }
-  if(!process.env.GROQ_API_KEY)throw new Error("Set GROQ_API_KEY or select Gemini");
-  const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+process.env.GROQ_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model:"llama-3.3-70b-versatile",messages:[{role:"user",content:prompt}],temperature:0.4})});
-  const j=await r.json().catch(()=>({}));
-  if(!r.ok){
-    const detail=String(j?.error?.message||j?.message||"No error details returned").slice(0,300);
-    console.error("[Groq] request failed",{status:r.status,code:j?.error?.code||null,type:j?.error?.type||null,message:detail});
-    throw new Error("Groq API error ("+r.status+"): "+detail);
+  async function generateWithGroq() {
+    if(!process.env.GROQ_API_KEY)throw new Error("GROQ_API_KEY is not configured");
+    const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+process.env.GROQ_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model:"llama-3.3-70b-versatile",messages:[{role:"user",content:prompt}],temperature:0.4})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok){
+      const detail=String(j?.error?.message||j?.message||"No error details returned").slice(0,300);
+      console.error("[Groq] request failed",{status:r.status,code:j?.error?.code||null,type:j?.error?.type||null,message:detail});
+      throw new Error("Groq API error ("+r.status+"): "+detail);
+    }
+    const output=j?.choices?.[0]?.message?.content;
+    if(!output)throw new Error("Groq returned an empty response");
+    return JSON.parse(output.replace(/```json|```/g,"").trim());
   }
-  const output=j?.choices?.[0]?.message?.content;
-  if(!output)throw new Error("Groq returned an empty response");
-  return JSON.parse(output.replace(/```json|```/g,"").trim());
+  if(provider==="gemini")return generateWithGemini();
+  try {
+    return await generateWithGroq();
+  } catch(groqError) {
+    console.error("[AI] Groq failed; trying Gemini fallback:",String(groqError.message||groqError).slice(0,300));
+    try {
+      const article=await generateWithGemini();
+      console.log("[AI] Gemini fallback succeeded.");
+      return article;
+    } catch(geminiError) {
+      throw new Error("Groq failed ("+String(groqError.message||groqError).slice(0,180)+"); Gemini fallback failed ("+String(geminiError.message||geminiError).slice(0,180)+")");
+    }
+  }
 }
 async function scheduledDraft() {
   const a=await generateWithAI();if(!a.title||!a.content)throw new Error("AI returned incomplete article");
