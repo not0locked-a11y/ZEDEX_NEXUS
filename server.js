@@ -108,7 +108,7 @@ async function generateWithAI() {
   const prompt='Create one concise, factual news article idea for a general audience. Return ONLY JSON with keys title,excerpt,content,category,source_url. Do not invent facts or citations. If you cannot verify a current event, create a clearly labelled evergreen explainer instead.';
   async function generateWithGemini() {
     if(!process.env.GEMINI_API_KEY)throw new Error("GEMINI_API_KEY is not configured");
-    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+process.env.GEMINI_API_KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key="+process.env.GEMINI_API_KEY,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
     const j=await r.json().catch(()=>({}));
     if(!r.ok){
       const detail=String(j?.error?.message||"No error details returned").slice(0,300);
@@ -121,7 +121,7 @@ async function generateWithAI() {
   }
   async function generateWithGroq() {
     if(!process.env.GROQ_API_KEY)throw new Error("GROQ_API_KEY is not configured");
-    const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+process.env.GROQ_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model:"llama-3.3-70b-versatile",messages:[{role:"user",content:prompt}],temperature:0.4})});
+    const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+process.env.GROQ_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model:"openai/gpt-oss-120b",messages:[{role:"user",content:prompt}],temperature:0.4})});
     const j=await r.json().catch(()=>({}));
     if(!r.ok){
       const detail=String(j?.error?.message||j?.message||"No error details returned").slice(0,300);
