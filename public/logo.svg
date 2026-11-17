@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 180" role="img" aria-labelledby="title desc">
+<title id="title">ZEDEX NEXUS</title><desc id="desc">A cyan orbital globe and open book symbol beside the ZEDEX NEXUS wordmark.</desc>
+<defs><linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8cfaff"/><stop offset=".48" stop-color="#16d9ef"/><stop offset="1" stop-color="#3978ff"/></linearGradient><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0a3"/><stop offset="1" stop-color="#e5a52c"/></linearGradient></defs>
+<g transform="translate(8 5)">
+<circle cx="78" cy="68" r="48" fill="#101b38" stroke="url(#cyan)" stroke-width="4"/>
+<path d="M36 68h84M78 20c-20 17-20 79 0 96M78 20c20 17 20 79 0 96M43 42c22 12 48 12 70 0M43 94c22-12 48-12 70 0" fill="none" stroke="#42eaff" stroke-width="2" opacity=".8"/>
+<ellipse cx="78" cy="68" rx="72" ry="25" transform="rotate(-22 78 68)" fill="none" stroke="#18cfff" stroke-width="3"/>
+<path d="M25 123q26-16 53 2 27-18 53-2v22q-26-15-53 3-27-18-53-3z" fill="#101b38" stroke="#f2f7ff" stroke-width="3" stroke-linejoin="round"/>
+<path d="M78 125v22" stroke="url(#gold)" stroke-width="3"/>
+<path d="M105 111q18-31 29-54 3 28-19 59l-10 8z" fill="url(#gold)" stroke="#fff0a3" stroke-width="1.5"/>
+</g>
+<path d="M178 44h2v94h-2z" fill="#2fe7f2" opacity=".8"/>
+<text x="205" y="91" font-family="Arial,Helvetica,sans-serif" font-size="62" font-weight="800" letter-spacing="2" fill="#f1f5ff">ZEDEX</text>
+<text x="424" y="91" font-family="Arial,Helvetica,sans-serif" font-size="62" font-weight="800" letter-spacing="2" fill="url(#cyan)">NEXUS</text>
+<text x="209" y="128" font-family="Arial,Helvetica,sans-serif" font-size="17" font-weight="600" letter-spacing="4" fill="#9eb0ce">SMART NEWS  •  DEEP INSIGHTS</text>
+<path d="M207 145h470" stroke="url(#cyan)" stroke-width="2" opacity=".8"/>
+</svg>
