@@ -112,7 +112,15 @@ async function generateWithAI() {
   }
   if(!process.env.GROQ_API_KEY)throw new Error("Set GROQ_API_KEY or select Gemini");
   const r=await fetch("https://api.groq.com/openai/v1/chat/completions",{method:"POST",headers:{"Authorization":"Bearer "+process.env.GROQ_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model:"llama-3.3-70b-versatile",messages:[{role:"user",content:prompt}],temperature:0.4})});
-  const j=await r.json();if(!r.ok)throw new Error("Groq request failed");return JSON.parse(j.choices[0].message.content.replace(/```json|```/g,"").trim());
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){
+    const detail=String(j?.error?.message||j?.message||"No error details returned").slice(0,300);
+    console.error("[Groq] request failed",{status:r.status,code:j?.error?.code||null,type:j?.error?.type||null,message:detail});
+    throw new Error("Groq API error ("+r.status+"): "+detail);
+  }
+  const output=j?.choices?.[0]?.message?.content;
+  if(!output)throw new Error("Groq returned an empty response");
+  return JSON.parse(output.replace(/```json|```/g,"").trim());
 }
 async function scheduledDraft() {
   const a=await generateWithAI();if(!a.title||!a.content)throw new Error("AI returned incomplete article");
