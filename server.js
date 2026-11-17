@@ -155,14 +155,20 @@ async function generateAndPublish() {
   console.log("AI article generated and PUBLISHED to Google Drive:",article.title);
   return article;
 }
-app.post("/api/admin/ai-generate",auth,admin,async(_req,res)=>{
-  try {
-    const article=await generateAndPublish();
-    res.json({ok:true,message:"AI article generated and published on ZEDEX NEXUS.",article:publicArticle(article)});
-  } catch(e) {
-    console.error("Manual AI publish failed:",e.message);
-    res.status(500).json({error:e.message||"AI generation failed"});
+app.post("/api/admin/ai-generate",auth,admin,async(req,res)=>{
+  const count=Number.parseInt(req.body.count,10)||1;
+  if(count<1||count>10)return res.status(400).json({error:"Choose between 1 and 10 articles per request."});
+  const published=[];
+  for(let i=0;i<count;i++){
+    try {
+      const article=await generateAndPublish();
+      published.push(publicArticle(article));
+    } catch(e) {
+      console.error("AI publish failed on article "+(i+1)+":",e.message);
+      return res.status(500).json({error:"Published "+published.length+" of "+count+" requested articles. Failed on article "+(i+1)+": "+(e.message||"AI generation failed"),published});
+    }
   }
+  res.json({ok:true,message:published.length+" separate AI article(s) generated and published on ZEDEX NEXUS.",articles:published});
 });
 // Generate and publish at 6 AM, noon, 6 PM and midnight India time.
 cron.schedule("0 6,12,18,0 * * *",()=>generateAndPublish().catch(e=>console.error("Scheduled AI publishing failed:",e.message)),{timezone:"Asia/Kolkata"});
