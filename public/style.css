@@ -217,3 +217,36 @@ footer {
   .hero { padding-left: clamp(40px, 4vw, 90px); padding-right: clamp(40px, 4vw, 90px); }
   .section,.about,footer { padding-left: clamp(40px, 4vw, 90px); padding-right: clamp(40px, 4vw, 90px); }
 }
+
+/* Readable article typography: override tiny inherited editor/AI inline styles */
+.article-expanded {
+  display:block;
+  width:100%;
+  max-width:100%;
+  font-size:clamp(17px,1.25vw,23px);
+  line-height:1.8;
+  color:#edf3ff;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.article-expanded .article-full-content,
+.article-expanded .article-full-content * {
+  font-size:clamp(17px,1.25vw,23px) !important;
+  line-height:1.8 !important;
+  color:#e8eef9;
+  max-width:100%;
+}
+.article-expanded .article-full-content p {margin:0 0 1.15em;white-space:normal}
+.article-expanded .article-full-content h2,
+.article-expanded .article-full-content h3 {font-size:1.3em !important;line-height:1.35 !important;margin:1.5em 0 .6em;color:#fff}
+.article-expanded .article-full-content strong {font-weight:800;color:#fff}
+.article-expanded .article-full-content ul,
+.article-expanded .article-full-content ol {padding-left:1.5em;margin:.5em 0 1.2em}
+.article-expanded .article-full-content li {margin:.35em 0;padding-left:.2em}
+.article-expanded .article-full-content img {max-width:100%;height:auto}
+.article-expanded .article-source {font-size:15px !important;line-height:1.6}
+.article-full-title {font-size:clamp(24px,2vw,34px);line-height:1.3}
+@media(min-width:1800px) {
+ .article-expanded .article-full-content,
+ .article-expanded .article-full-content * {font-size:clamp(20px,1.2vw,28px) !important;line-height:1.85 !important}
+}
